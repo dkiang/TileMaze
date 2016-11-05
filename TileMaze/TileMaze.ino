@@ -38,16 +38,11 @@
  */
 
 #include <MeggyJrSimple.h>    // Required code, line 1 of 2.
-// This holds a copy of the active quadrant.
-int screen[4][4];
-
-// This saves the entire game board.
-int screenLarge[8][8];
 
 /* This is the active quadrant that syncs with screen[][].
  *  
- *  0  1
- *  3  2
+ *  1  2
+ *  4  3
  *  
  */
 int quadrant;
@@ -103,31 +98,31 @@ void loop()                     // run over and over again
 
   if (Button_Up)
   {
-    rotateQuad(0);
+    RotateQuad(1);
   }
     if (Button_Right)
   {
-    rotateQuad(1);
+    RotateQuad(2);
   }
     if (Button_Down)
   {
-    rotateQuad(3);
+    RotateQuad(3);
   }
     if (Button_Left)
   {
-    rotateQuad(3);
+    RotateQuad(4);
   }
   
   if (Button_A)
   {
     SaveScreen();
-    RotateScreen(90);
+//    RotateScreen(90);
   }
   
   if (Button_B)
   {
     SaveScreen();
-    RotateScreen(-90);
+//    RotateScreen(-90);
   }
   DisplayScreen();
   DisplaySlate();
@@ -149,37 +144,35 @@ void RotateQuad(int quadrant)
 {
   int startX, startY;
   int temp[4][4]; // create temp array to hold rotated coords
-  for (int i = 0; i < 4; j++)
+  for (int i = 0; i < 4; i++)
   {
      for (int j = 0; j < 4; j++)
      {
-       if (quadrant == 0)
-         temp[i][j] = quad0[i][j];
-       else if (quadrant == 1)
-         temp[i][j] = quad1[i][j];
+       if (quadrant == 1)
+         temp[j][4-i] = quad01[i][j];
        else if (quadrant == 2)
-         temp[i][j] = quad2[i][j];
-       else temp[i][j] = quad3[i][j];
+         temp[j][4-i] = quad02[i][j];
+       else if (quadrant == 3)
+         temp[j][4-i] = quad03[i][j];
+       else temp[j][4-i] = quad04[i][j];
      }
    }
 
-   // Rotate the values 
-  for (int i = startX; i < startX + 4; i++)
-  {
-    for (int j = startY; j < startY + 4; j++)
-    {
-      temp[j][4-i] = screen[i][j];
-    }
-  }
   // copy everything from temp array over to screen array
-  for (int i = startX; i < startX + 4; i++)
+  for (int i = 0; i < 4; i++)
   {
-    for (int j = startY; j < startY + 4; j++)
+    for (int j = 0; j < 4; j++)
     {
-      screen[i][j] = temp[i][j];
+      if (quadrant == 1)
+         temp[i][j] = quad01[i][j];
+       else if (quadrant == 2)
+         temp[i][j] = quad02[i][j];
+       else if (quadrant == 3)
+         temp[i][j] = quad03[i][j];
+       else temp[i][j] = quad04[i][j];
     }
   }
-  PrintScreen(screen);
+  PrintScreen();
 }
 
 void DisplayScreen()
@@ -187,9 +180,17 @@ void DisplayScreen()
   ClearSlate();
   for (int x = 0; x < 4; x++)
   {
-    for (int y = 0; y < 4; y++)
+    for (int y = 4; y < 8; y++)
     {
-      DrawPx(x,y,screen01[x][y]);
+      DrawPx(x,y,quad01[x][y]);
+    }
+  }
+
+  for (int x = 4; x < 8; x++)
+  {
+    for (int y = 4; y < 8; y++)
+    {
+      DrawPx(x,y,quad02[x][y]);
     }
   }
 
@@ -197,32 +198,24 @@ void DisplayScreen()
   {
     for (int y = 0; y < 4; y++)
     {
-      DrawPx(x,y,screen02[x][y]);
+      DrawPx(x,y,quad03[x][y]);
     }
   }
 
   for (int x = 0; x < 4; x++)
   {
-    for (int y = 4; y < 8; y++)
+    for (int y = 0; y < 4; y++)
     {
-      DrawPx(x,y,screen03[x][y]);
-    }
-  }
-
-  for (int x = 4; x < 8; x++)
-  {
-    for (int y = 4; y < 8; y++)
-    {
-      DrawPx(x,y,screen04[x][y]);
+      DrawPx(x,y,quad04[x][y]);
     }
   }
 }
 
-void PrintScreen(int[][4]) // Call this whenever you want to see the contents of the screen array.
+void PrintScreen() // Call this whenever you want to see the contents of the screen array.
 {
-  for (int x = 0; x < 4; x++)
+  for (int x = 0; x < 8; x++)
   {
-    for (int y = 0; y < 4; y++)
+    for (int y = 0; y < 8; y++)
     {
       //Serial.print(screen[x][y]);
       Serial.print(" ");
