@@ -53,28 +53,31 @@ int screenLarge[8][8];
 int quadrant;
 int counter;
 
-int screen01[4][4] = {
+// This is used for saving the state of the screen.
+int screen[8][8];
+
+int quad01[4][4] = {
 {1,1,0,1},
 {0,0,0,1},
 {1,1,0,1},
 {0,1,0,1}
 };
 
-int screen02[4][4] = {
+int quad02[4][4] = {
 {1,1,1,1},
 {0,0,0,1},
 {0,0,0,0},
 {0,1,0,0}
 };
 
-int screen03[4][4] = {
+int quad03[4][4] = {
 {1,1,1,0},
 {1,1,1,0},
 {0,0,0,0},
 {0,0,1,0}
 };
 
-int screen04[4][4] = {
+int quad04[4][4] = {
 {1,0,1,1},
 {1,0,1,1},
 {1,0,0,0},
@@ -97,6 +100,24 @@ void loop()                     // run over and over again
   
   ClearSlate();
   CheckButtonsPress();
+
+  if (Button_Up)
+  {
+    rotateQuad(0);
+  }
+    if (Button_Right)
+  {
+    rotateQuad(1);
+  }
+    if (Button_Down)
+  {
+    rotateQuad(3);
+  }
+    if (Button_Left)
+  {
+    rotateQuad(3);
+  }
+  
   if (Button_A)
   {
     SaveScreen();
@@ -123,43 +144,26 @@ void SaveScreen() // Takes whatever is on the screen and copies it into screen[]
   }
 }
 
-// Proceeds through screen[][] and copies everything into a temp array to rotate it.
-void RotateScreen(int angle) 
+// Proceeds through quad01[][] and copies everything into a temp array to rotate it.
+void RotateQuad(int quadrant) 
 {
   int startX, startY;
   int temp[4][4]; // create temp array to hold rotated coords
-
-  switch (quadrant)
+  for (int i = 0; i < 4; j++)
   {
-    case 0:
-    {
-      startX = 0;
-      startY = 0;
-    }
-    break;
+     for (int j = 0; j < 4; j++)
+     {
+       if (quadrant == 0)
+         temp[i][j] = quad0[i][j];
+       else if (quadrant == 1)
+         temp[i][j] = quad1[i][j];
+       else if (quadrant == 2)
+         temp[i][j] = quad2[i][j];
+       else temp[i][j] = quad3[i][j];
+     }
+   }
 
-    case 1:
-    {
-      startX = 4;
-      startY = 0;
-    }
-    break;
-    
-    case 2:
-    {
-      startX = 0;
-      startY = 4;
-    }
-    break;
-
-    default:
-    {
-      startX = 4;
-      startY = 4;
-    }
-    break;
-  }
-  
+   // Rotate the values 
   for (int i = startX; i < startX + 4; i++)
   {
     for (int j = startY; j < startY + 4; j++)
