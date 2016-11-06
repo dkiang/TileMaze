@@ -87,8 +87,8 @@ void setup()                    // run once, when the sketch starts
 
 void loop()                     // run over and over again
 { 
+  DisplaySlate();
   ClearSlate();
-
   CheckButtonsPress();
   if (Button_Up)
   {
@@ -119,7 +119,8 @@ void loop()                     // run over and over again
     RotateScreen(-90);
   }
   DisplayScreen();
-  DisplaySlate();
+
+  
 }
 
 void SaveScreen() // Takes whatever is on the screen and copies it into screen[][] which is an 8x8 2D array.
@@ -134,6 +135,8 @@ void SaveScreen() // Takes whatever is on the screen and copies it into screen[]
 }
 
 // Proceeds through quad01[][] and copies everything into a temp array to rotate it.
+// Having to use a quadrant variable is stupid inefficient and a better way would
+// be to pass in a reference to the appropriate array, but Version 2.
 void RotateQuad(int quadrant) 
 {
   int startX, startY;
@@ -143,12 +146,12 @@ void RotateQuad(int quadrant)
      for (int j = 0; j < 4; j++)
      {
        if (quadrant == 1)
-         temp[j][4-i] = quad01[i][j];
+         temp[i][j] = quad01[j][3-i];
        else if (quadrant == 2)
-         temp[j][4-i] = quad02[i][j];
+         temp[i][j] = quad02[j][3-i];
        else if (quadrant == 3)
-         temp[j][4-i] = quad03[i][j];
-       else temp[j][4-i] = quad04[i][j];
+         temp[i][j] = quad03[j][3-i];
+       else temp[i][j] = quad04[j][3-i];
      }
    }
 
@@ -158,15 +161,15 @@ void RotateQuad(int quadrant)
     for (int j = 0; j < 4; j++)
     {
       if (quadrant == 1)
-         temp[i][j] = quad01[i][j];
+         quad01[i][j] = temp[i][j];
        else if (quadrant == 2)
-         temp[i][j] = quad02[i][j];
+         quad02[i][j] = temp[i][j];
        else if (quadrant == 3)
-         temp[i][j] = quad03[i][j];
-       else temp[i][j] = quad04[i][j];
+         quad03[i][j] = temp[i][j];
+       else quad04[i][j] = temp[i][j];
     }
   }
-  PrintScreen();
+//  PrintScreen();
 }
 
 void DisplayScreen()
