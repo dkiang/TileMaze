@@ -49,8 +49,13 @@
 // This is used for saving the state of the screen.
 int screen[8][8];
 
+// This toggles the state of the player.
+boolean mazeActive = true;
+int playerX, playerY;
+int counter;
+
 int quad01[4][4] = {
-{1,1,0,1},
+{1,1,1,1},
 {0,0,0,1},
 {1,1,0,1},
 {0,1,0,1}
@@ -59,22 +64,22 @@ int quad01[4][4] = {
 int quad02[4][4] = {
 {1,1,1,1},
 {0,0,0,1},
-{0,0,0,0},
-{0,1,0,0}
+{1,1,0,1},
+{0,1,0,1}
 };
 
 int quad03[4][4] = {
-{1,1,1,0},
-{1,1,1,0},
-{0,0,0,0},
-{0,0,1,0}
+{1,1,1,1},
+{0,0,0,1},
+{1,1,0,1},
+{0,1,0,1}
 };
 
 int quad04[4][4] = {
-{1,0,1,1},
-{1,0,1,1},
-{1,0,0,0},
-{1,1,1,1}
+{1,1,1,1},
+{0,0,0,1},
+{1,1,0,1},
+{0,1,0,1}
 };
 
 
@@ -83,36 +88,63 @@ void setup()                    // run once, when the sketch starts
 {
   MeggyJrSimpleSetup();      // Required code, line 2 of 2.
   Serial.begin(9600);
+  counter = 0;
+  playerX = 1;
+  playerY = 1;
 }
 
 void loop()                     // run over and over again
 { 
+  if (counter < 20)
+    counter++;
+  else counter = 0;
+  
   DisplaySlate();
   ClearSlate();
+  DrawScreen();
   CheckButtonsPress();
-  if (Button_Up)
+  if (mazeActive)
   {
-    RotateQuad(1);
-  }
+    if (Button_Up)
+      RotateQuad(1);
     if (Button_Right)
-  {
-    RotateQuad(2);
-  }
+      RotateQuad(2);
     if (Button_Down)
-  {
-    RotateQuad(3);
-  }
+      RotateQuad(3);
     if (Button_Left)
+      RotateQuad(4);
+    DrawScreen();
+  }
+  else
   {
-    RotateQuad(4);
+    if (Button_Up)
+    {
+      if (playerY < 7 && ReadPx(playerX, playerY + 1) == 0)
+        playerY++;
+    }
+    if (Button_Right)
+    {
+      if (playerX < 7 && ReadPx(playerX + 1, playerY) == 0)
+        playerX++;
+    }
+    if (Button_Down)
+    {
+      if (playerY > 0 && ReadPx(playerX, playerY - 1) == 0)
+        playerY--;
+    }
+    if (Button_Left)
+    {
+      if (playerX > 0  && ReadPx(playerX - 1, playerY) == 0)
+        playerX--;
+    }
   }
 
-  DisplayScreen();
+  DrawScreen();
+  DrawPlayer();
   
   if (Button_A)
   {
-    SaveScreen();
-    RotateScreen(90);
+    mazeActive = !mazeActive;
   }
   
   if (Button_B)
@@ -120,10 +152,6 @@ void loop()                     // run over and over again
     SaveScreen();
     RotateScreen(-90);
   }
-  
-
-
-  
 }
 
 void SaveScreen() // Takes whatever is on the screen and copies it into screen[][] which is an 8x8 2D array.
@@ -175,7 +203,7 @@ void RotateQuad(int quadrant)
 //  PrintScreen();
 }
 
-void DisplayScreen()
+void DrawScreen()
 {
   // Draw Quad01
   int col = 0;
@@ -266,5 +294,15 @@ void PrintScreen() // Call this whenever you want to see the contents of the scr
     }
     Serial.println();
   }
+}
+
+void DrawPlayer()
+{
+  if (mazeActive)
+    DrawPx(playerX, playerY, Green);
+  else if (counter % 4 == 0)
+    DrawPx(playerX, playerY, Green);
+  else
+    DrawPx(playerX, playerY, 0);
 }
 
