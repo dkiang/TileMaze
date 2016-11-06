@@ -39,14 +39,12 @@
 
 #include <MeggyJrSimple.h>    // Required code, line 1 of 2.
 
-/* This is the active quadrant that syncs with screen[][].
+/* The quadrant layout is numbered as below:
  *  
  *  1  2
  *  4  3
  *  
  */
-int quadrant;
-int counter;
 
 // This is used for saving the state of the screen.
 int screen[8][8];
@@ -88,14 +86,10 @@ void setup()                    // run once, when the sketch starts
 }
 
 void loop()                     // run over and over again
-{
-  if (counter < 20)
-    counter++;
-  else counter = 0;
-  
+{ 
   ClearSlate();
-  CheckButtonsPress();
 
+  CheckButtonsPress();
   if (Button_Up)
   {
     RotateQuad(1);
@@ -116,13 +110,13 @@ void loop()                     // run over and over again
   if (Button_A)
   {
     SaveScreen();
-//    RotateScreen(90);
+    RotateScreen(90);
   }
   
   if (Button_B)
   {
     SaveScreen();
-//    RotateScreen(-90);
+    RotateScreen(-90);
   }
   DisplayScreen();
   DisplaySlate();
@@ -177,38 +171,82 @@ void RotateQuad(int quadrant)
 
 void DisplayScreen()
 {
-  ClearSlate();
+  // Draw Quad01
+  int row = 0;
   for (int x = 0; x < 4; x++)
   {
-    for (int y = 4; y < 8; y++)
+    int col = 0;
+    for (int y = 7; y > 3; y--)
     {
-      DrawPx(x,y,quad01[x][y]);
+      DrawPx(x,y,quad01[row][col]);
+      col++;
     }
+    row++;
   }
 
+  // Draw Quad02
+  row = 0;
   for (int x = 4; x < 8; x++)
   {
-    for (int y = 4; y < 8; y++)
+    int col = 0;
+    for (int y = 7; y > 3; y--)
     {
-      DrawPx(x,y,quad02[x][y]);
+      DrawPx(x,y,quad02[row][col]);
+      col++;
     }
+    row++;
   }
 
+  // Draw Quad03
+  row = 0;
   for (int x = 4; x < 8; x++)
   {
-    for (int y = 0; y < 4; y++)
+    int col = 0;
+    for (int y = 3; y >= 0; y--)
     {
-      DrawPx(x,y,quad03[x][y]);
+      DrawPx(x,y,quad03[row][col]);
+      col++;
     }
+    row++;
   }
 
+  // Draw Quad04
+  row = 0;
   for (int x = 0; x < 4; x++)
   {
-    for (int y = 0; y < 4; y++)
+    int col = 0;
+    for (int y = 3; y >= 0; y--)
     {
-      DrawPx(x,y,quad04[x][y]);
+      DrawPx(x,y,quad04[row][col]);
+      col++;
+    }
+    row++;
+  }
+}
+
+void RotateScreen(int angle) // Proceeds through screen[][] and copies everything into a temp array to rotate it.
+{
+  int temp[8][8]; // create temp array to hold rotated coords
+  
+  for (int i = 0; i < 8; i++)
+  {
+    for (int j = 0; j < 8; j++)
+    {
+      if (angle == 90)
+        temp[j][7-i] = screen[i][j];
+      else
+        temp[i][j] = screen[j][7-i];
     }
   }
+  // copy everything from temp array over to screens array
+  for (int i = 0; i < 8; i++)
+  {
+    for (int j = 0; j < 8; j++)
+    {
+      screen[i][j] = temp[i][j];
+    }
+  }
+  PrintScreen();
 }
 
 void PrintScreen() // Call this whenever you want to see the contents of the screen array.
@@ -217,7 +255,7 @@ void PrintScreen() // Call this whenever you want to see the contents of the scr
   {
     for (int y = 0; y < 8; y++)
     {
-      //Serial.print(screen[x][y]);
+      Serial.print(screen[x][y]);
       Serial.print(" ");
     }
     Serial.println();
