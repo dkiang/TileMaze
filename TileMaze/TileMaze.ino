@@ -106,6 +106,8 @@ void loop()                     // run over and over again
   {
     RotateQuad(4);
   }
+
+  DisplayScreen();
   
   if (Button_A)
   {
@@ -118,7 +120,8 @@ void loop()                     // run over and over again
     SaveScreen();
     RotateScreen(-90);
   }
-  DisplayScreen();
+  
+
 
   
 }
@@ -175,10 +178,10 @@ void RotateQuad(int quadrant)
 void DisplayScreen()
 {
   // Draw Quad01
-  int row = 0;
+  int col = 0;
   for (int x = 0; x < 4; x++)
   {
-    int col = 0;
+    int row = 0;
     for (int y = 7; y > 3; y--)
     {
       DrawPx(x,y,quad01[row][col]);
@@ -188,10 +191,10 @@ void DisplayScreen()
   }
 
   // Draw Quad02
-  row = 0;
+  col = 0;
   for (int x = 4; x < 8; x++)
   {
-    int col = 0;
+    int row = 0;
     for (int y = 7; y > 3; y--)
     {
       DrawPx(x,y,quad02[row][col]);
@@ -201,10 +204,10 @@ void DisplayScreen()
   }
 
   // Draw Quad03
-  row = 0;
+  col = 0;
   for (int x = 4; x < 8; x++)
   {
-    int col = 0;
+    int row = 0;
     for (int y = 3; y >= 0; y--)
     {
       DrawPx(x,y,quad03[row][col]);
@@ -214,10 +217,10 @@ void DisplayScreen()
   }
 
   // Draw Quad04
-  row = 0;
+  col = 0;
   for (int x = 0; x < 4; x++)
   {
-    int col = 0;
+    int row = 0;
     for (int y = 3; y >= 0; y--)
     {
       DrawPx(x,y,quad04[row][col]);
