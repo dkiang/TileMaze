@@ -170,21 +170,91 @@ void SaveScreen() // Takes whatever is on the screen and copies it into screen[]
 // be to pass in a reference to the appropriate array, but Version 2.
 void RotateQuad(int quadrant) 
 {
+  Serial.println("IN");
+  Serial.print(playerX);
+  Serial.print(" ");
+  Serial.println(playerY);
   int startX, startY;
   int temp[4][4]; // create temp array to hold rotated coords
   for (int i = 0; i < 4; i++)
   {
-     for (int j = 0; j < 4; j++)
-     {
-       if (quadrant == 1)
-         temp[i][j] = quad01[j][3-i];
-       else if (quadrant == 2)
-         temp[i][j] = quad02[j][3-i];
-       else if (quadrant == 3)
-         temp[i][j] = quad03[j][3-i];
-       else temp[i][j] = quad04[j][3-i];
-     }
-   }
+    for (int j = 0; j < 4; j++)
+    {
+      if (quadrant == 1)
+        temp[i][j] = quad01[j][3-i];
+      else if (quadrant == 2)
+        temp[i][j] = quad02[j][3-i];
+      else if (quadrant == 3)
+        temp[i][j] = quad03[j][3-i];
+      else temp[i][j] = quad04[j][3-i];
+    }
+
+    // Rotate player too
+    Serial.print("Quadrant is");
+    Serial.println(quadrant);
+    Serial.print("playerQuadrant is");
+    Serial.println(playerQuadrant());
+    if (playerQuadrant() == quadrant)
+    {
+      // Because the player could be located in a different quadrant, we have to
+      // do the rotation on a 4x4 grid and then add in the offset.
+      int offsetX, offsetY;
+      switch (quadrant)
+      {
+        case 1:
+        {
+          offsetX = 0;
+          offsetY = 4;
+          break;
+        }
+        case 2:
+        {
+          offsetX = 4;
+          offsetY = 4;
+          break;
+        }
+        case 3:
+        {
+          offsetX = 4;
+          offsetY = 0;
+          break;
+        }
+        default:
+        {
+          offsetX = 0;
+          offsetY = 0;
+        }
+      }
+
+      // Apply the offset; will add it back later
+      playerX -= offsetX;
+      playerY -= offsetY;
+
+      // First case: one diagonal where x is the same as y
+      if (playerX == playerY)
+      {
+        playerY = 3 - playerX;
+      }
+
+      // Second case: other diagonal where sum is 3
+      else if (playerX + playerY == 3)
+      {
+        playerX = playerY;
+      }
+
+      // All other cases follow same pattern
+      else
+      {
+        int t = playerX;
+        playerX = playerY;
+        playerY = 3 - t;
+      }
+
+      // Adding the offset back
+      playerX += offsetX;
+      playerY += offsetY;
+    }
+  }
 
   // copy everything from temp array over to screen array
   for (int i = 0; i < 4; i++)
@@ -200,7 +270,10 @@ void RotateQuad(int quadrant)
        else quad04[i][j] = temp[i][j];
     }
   }
-//  PrintScreen();
+  Serial.println("OUT");
+  Serial.print(playerX);
+  Serial.print(" ");
+  Serial.println(playerY);
 }
 
 void DrawScreen()
@@ -298,11 +371,23 @@ void PrintScreen() // Call this whenever you want to see the contents of the scr
 
 void DrawPlayer()
 {
-  if (mazeActive)
+  if (!mazeActive)
     DrawPx(playerX, playerY, Green);
   else if (counter % 4 == 0)
     DrawPx(playerX, playerY, Green);
   else
     DrawPx(playerX, playerY, 0);
+}
+
+// Returns the quadrant the player is in.
+int playerQuadrant()
+{
+  if (playerY > 3 && playerX < 4)
+    return 1;
+  if (playerY > 3 && playerX > 3)
+    return 2;
+  if (playerY < 4 && playerX > 3)
+    return 3;
+  else return 4;
 }
 
