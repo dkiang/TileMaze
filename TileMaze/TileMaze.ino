@@ -188,72 +188,82 @@ void RotateQuad(int quadrant)
         temp[i][j] = quad03[j][3-i];
       else temp[i][j] = quad04[j][3-i];
     }
-
-    // Rotate player too
-    Serial.print("Quadrant is");
-    Serial.println(quadrant);
-    Serial.print("playerQuadrant is");
-    Serial.println(playerQuadrant());
-    if (playerQuadrant() == quadrant)
+  }
+//    Rotate player too
+//    Serial.print("Quadrant is ");
+//    Serial.println(quadrant);
+//    Serial.print("playerQuadrant is ");
+//    Serial.println(playerQuadrant());
+//    Serial.print("Match = ");
+//    Serial.println(playerQuadrant() == quadrant);
+  if (playerQuadrant() == quadrant)
+  {
+    // Because the player could be located in a different quadrant, we have to
+    // do the rotation on a 4x4 grid and then add in the offset.
+    int offsetX, offsetY;
+    switch (quadrant)
     {
-      // Because the player could be located in a different quadrant, we have to
-      // do the rotation on a 4x4 grid and then add in the offset.
-      int offsetX, offsetY;
-      switch (quadrant)
+      case 1:
       {
-        case 1:
-        {
-          offsetX = 0;
-          offsetY = 4;
-          break;
-        }
-        case 2:
-        {
-          offsetX = 4;
-          offsetY = 4;
-          break;
-        }
-        case 3:
-        {
-          offsetX = 4;
-          offsetY = 0;
-          break;
-        }
-        default:
-        {
-          offsetX = 0;
-          offsetY = 0;
-        }
+        offsetX = 0;
+        offsetY = 4;
+        break;
       }
-
-      // Apply the offset; will add it back later
-      playerX -= offsetX;
-      playerY -= offsetY;
-
-      // First case: one diagonal where x is the same as y
-      if (playerX == playerY)
+      case 2:
       {
-        playerY = 3 - playerX;
+        offsetX = 4;
+        offsetY = 4;
+        break;
       }
-
-      // Second case: other diagonal where sum is 3
-      else if (playerX + playerY == 3)
+      case 3:
       {
-        playerX = playerY;
+        offsetX = 4;
+        offsetY = 0;
+        break;
       }
-
-      // All other cases follow same pattern
-      else
+      default:
       {
-        int t = playerX;
-        playerX = playerY;
-        playerY = 3 - t;
+        offsetX = 0;
+        offsetY = 0;
       }
-
-      // Adding the offset back
-      playerX += offsetX;
-      playerY += offsetY;
     }
+
+    // Apply the offset; will add it back later
+    Serial.print("Before offset: ");
+    Serial.print(playerX);
+    Serial.print(" ");
+    Serial.println(playerY);
+    
+    playerX -= offsetX;
+    playerY -= offsetY;
+
+    Serial.print("After offset: ");
+    Serial.print(playerX);
+    Serial.print(" ");
+    Serial.println(playerY);
+
+    // First case: one diagonal where x is the same as y
+    if (playerX == playerY)
+    {
+      playerY = 3 - playerX;
+    }
+    // Second case: other diagonal where sum is 3
+    else if (playerX + playerY == 3)
+    {
+      playerX = playerY;
+    }
+
+    // All other cases follow same pattern
+    else
+    {
+      int t = playerX;
+      playerX = playerY;
+      playerY = 3 - t;
+    }
+
+    // Adding the offset back
+    playerX += offsetX;
+    playerY += offsetY;
   }
 
   // copy everything from temp array over to screen array
