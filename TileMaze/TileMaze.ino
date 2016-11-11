@@ -12,7 +12,7 @@
  Copyright (c) 2008 Windell H. Oskay.  All right reserved.
  http://www.evilmadscientist.com/
  
- This library is free software: you can redistribute it and/or modify
+ This library is free software: you can mazeColoristribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
  (at your option) any later version.
@@ -37,9 +37,9 @@
  * http://www.arduino.cc/en/Tutorial/Blink
  */
 
-#include <MeggyJrSimple.h>    // Required code, line 1 of 2.
+#include <MeggyJrSimple.h>    // RequimazeColor code, line 1 of 2.
 
-/* The quadrant layout is numbered as below:
+/* The quadrant layout is numbemazeColor as below:
  *  
  *  1  2
  *  4  3
@@ -52,41 +52,45 @@ int screen[8][8];
 // This toggles the state of the player.
 boolean mazeActive = true;
 int playerX, playerY;
+int playerColor = 1;
+int mazeColor = 6;
 int counter;
+int appleX, appleY;
+boolean appleEaten = true;
 
 int quad01[4][4] = {
-{1,1,1,1},
-{0,0,0,1},
-{1,1,0,1},
-{0,1,0,1}
+{4,4,4,4},
+{0,0,0,4},
+{4,4,0,4},
+{0,4,0,4}
 };
 
 int quad02[4][4] = {
-{1,1,1,1},
-{0,0,0,1},
-{1,1,0,1},
-{0,1,0,1}
+{4,4,4,4},
+{0,0,0,4},
+{4,4,0,4},
+{0,4,0,4}
 };
 
 int quad03[4][4] = {
-{1,1,1,1},
-{0,0,0,1},
-{1,1,0,1},
-{0,1,0,1}
+{4,4,4,4},
+{0,0,0,4},
+{4,4,0,4},
+{0,4,0,4}
 };
 
 int quad04[4][4] = {
-{1,1,1,1},
-{0,0,0,1},
-{1,1,0,1},
-{0,1,0,1}
+{4,4,4,4},
+{0,0,0,4},
+{4,4,0,4},
+{0,4,0,4}
 };
 
 
 
 void setup()                    // run once, when the sketch starts
 {
-  MeggyJrSimpleSetup();      // Required code, line 2 of 2.
+  MeggyJrSimpleSetup();      // RequimazeColor code, line 2 of 2.
   Serial.begin(9600);
   counter = 0;
   playerX = 1;
@@ -102,6 +106,8 @@ void loop()                     // run over and over again
   DisplaySlate();
   ClearSlate();
   DrawScreen();
+  DrawApple();
+  DrawPx(appleX,appleY,Red);
   CheckButtonsPress();
   if (mazeActive)
   {
@@ -149,8 +155,7 @@ void loop()                     // run over and over again
   
   if (Button_B)
   {
-    SaveScreen();
-    RotateScreen(-90);
+    appleEaten = true;
   }
 }
 
@@ -189,82 +194,13 @@ void RotateQuad(int quadrant)
       else temp[i][j] = quad04[j][3-i];
     }
   }
-//    Rotate player too
-//    Serial.print("Quadrant is ");
-//    Serial.println(quadrant);
-//    Serial.print("playerQuadrant is ");
-//    Serial.println(playerQuadrant());
-//    Serial.print("Match = ");
-//    Serial.println(playerQuadrant() == quadrant);
-  if (playerQuadrant() == quadrant)
-  {
-    // Because the player could be located in a different quadrant, we have to
-    // do the rotation on a 4x4 grid and then add in the offset.
-    int offsetX, offsetY;
-    switch (quadrant)
-    {
-      case 1:
-      {
-        offsetX = 0;
-        offsetY = 4;
-        break;
-      }
-      case 2:
-      {
-        offsetX = 4;
-        offsetY = 4;
-        break;
-      }
-      case 3:
-      {
-        offsetX = 4;
-        offsetY = 0;
-        break;
-      }
-      default:
-      {
-        offsetX = 0;
-        offsetY = 0;
-      }
-    }
 
-    // Apply the offset; will add it back later
-    Serial.print("Before offset: ");
-    Serial.print(playerX);
-    Serial.print(" ");
-    Serial.println(playerY);
-    
-    playerX -= offsetX;
-    playerY -= offsetY;
-
-    Serial.print("After offset: ");
-    Serial.print(playerX);
-    Serial.print(" ");
-    Serial.println(playerY);
-
-    // First case: one diagonal where x is the same as y
-    if (playerX == playerY)
-    {
-      playerY = 3 - playerX;
-    }
-    // Second case: other diagonal where sum is 3
-    else if (playerX + playerY == 3)
-    {
-      playerX = playerY;
-    }
-
-    // All other cases follow same pattern
-    else
-    {
-      int t = playerX;
-      playerX = playerY;
-      playerY = 3 - t;
-    }
-
-    // Adding the offset back
-    playerX += offsetX;
-    playerY += offsetY;
-  }
+  // The position of the player must be rotated if it exists on the same quadrant
+  // Same for apple. Pass in 0 to update coordinates for the player, and 1 for the apple
+  if (locateQuadrant(playerX,playerY) == quadrant)
+    rotatePoints(quadrant,0);
+  if (locateQuadrant(appleX,appleY) == quadrant)
+    rotatePoints(quadrant,1);
 
   // copy everything from temp array over to screen array
   for (int i = 0; i < 4; i++)
@@ -382,15 +318,16 @@ void PrintScreen() // Call this whenever you want to see the contents of the scr
 void DrawPlayer()
 {
   if (!mazeActive)
-    DrawPx(playerX, playerY, Green);
+    DrawPx(playerX, playerY, playerColor);
   else if (counter % 4 == 0)
-    DrawPx(playerX, playerY, Green);
+    DrawPx(playerX, playerY, playerColor);
   else
     DrawPx(playerX, playerY, 0);
 }
 
 // Returns the quadrant the player is in.
-int playerQuadrant()
+// Modified to allow any coordinates to be passed in
+int locateQuadrant(int x , int y)
 {
   if (playerY > 3 && playerX < 4)
     return 1;
@@ -399,5 +336,108 @@ int playerQuadrant()
   if (playerY < 4 && playerX > 3)
     return 3;
   else return 4;
+}
+
+// Target is 0 for player, 1 for apple
+void rotatePoints(int quadrant,int target)
+{
+  // Because the player could be located in a different quadrant, we have to
+  // do the rotation on a 4x4 grid and then add in the offset.
+  int offsetX, offsetY;
+  int x, y;
+
+  // Copying values from target
+  if (target == 0)
+  {
+    x = playerX;
+    y = playerY;
+  }
+
+  else if (target == 1)
+  {
+    x = appleX;
+    y = appleY;
+  }
+  
+  switch (quadrant)
+  {
+    case 1:
+    {
+      offsetX = 0;
+      offsetY = 4;
+      break;
+    }
+    case 2:
+    {
+      offsetX = 4;
+      offsetY = 4;
+      break;
+    }
+    case 3:
+    {
+      offsetX = 4;
+      offsetY = 0;
+      break;
+    }
+    default:
+    {
+      offsetX = 0;
+      offsetY = 0;
+    }
+  }
+
+  x -= offsetX;
+  x -= offsetY;
+
+  // First case: one diagonal where x is the same as y
+  if (x == y)
+  {
+    y = 3 - x;
+  }
+  // Second case: other diagonal where sum is 3
+  else if (x + y == 3)
+  {
+    x = y;
+  }
+
+  // All other cases follow same pattern
+  else
+  {
+    int t = x;
+    x = y;
+    y = 3 - t;
+  }
+
+  // Adding the offset back
+  x += offsetX;
+  y += offsetY;
+
+  // Copying back to target
+  if (target == 0)
+  {
+    playerX = x;
+    playerY = y;
+  }
+
+  else if (target == 1)
+  {
+    appleX = x;
+    appleY = y;
+  }
+}
+
+void DrawApple()
+{
+  if (appleEaten == true)
+  {
+    do
+    {
+      appleX = random(8);
+      appleY = random(8);
+    }
+    while (ReadPx(appleX,appleY) != 0);
+    appleEaten = false;
+  }
+  else DrawPx(appleX,appleY,Red);
 }
 
