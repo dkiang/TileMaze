@@ -52,38 +52,40 @@ int screen[8][8];
 // This toggles the state of the player.
 boolean mazeActive = true;
 int playerX, playerY;
-int playerColor = 1;
-int mazeColor = 6;
+int playerColor = 5;
+int l = 4;
 int counter;
 int appleX, appleY;
 boolean appleEaten = true;
+int eaten = 0;
 
+// Using a single letter variable (l) so that the maze color can change.
 int quad01[4][4] = {
-{4,4,4,4},
-{0,0,0,4},
-{4,4,0,4},
-{0,4,0,4}
+{l,l,l,l},
+{0,0,0,l},
+{l,l,0,l},
+{0,l,0,l}
 };
 
 int quad02[4][4] = {
-{4,4,4,4},
-{0,0,0,4},
-{4,4,0,4},
-{0,4,0,4}
+{l,l,l,l},
+{0,0,0,l},
+{l,l,0,l},
+{0,l,0,l}
 };
 
 int quad03[4][4] = {
-{4,4,4,4},
-{0,0,0,4},
-{4,4,0,4},
-{0,4,0,4}
+{l,l,l,l},
+{0,0,0,l},
+{l,l,0,l},
+{0,l,0,l}
 };
 
 int quad04[4][4] = {
-{4,4,4,4},
-{0,0,0,4},
-{4,4,0,4},
-{0,4,0,4}
+{l,l,l,l},
+{0,0,0,l},
+{l,l,0,l},
+{0,l,0,l}
 };
 
 
@@ -106,47 +108,14 @@ void loop()                     // run over and over again
   DisplaySlate();
   ClearSlate();
   DrawScreen();
-  DrawApple();
-  DrawPx(appleX,appleY,Red);
   CheckButtonsPress();
   if (mazeActive)
-  {
-    if (Button_Up)
-      RotateQuad(1);
-    if (Button_Right)
-      RotateQuad(2);
-    if (Button_Down)
-      RotateQuad(3);
-    if (Button_Left)
-      RotateQuad(4);
-    DrawScreen();
-  }
-  else
-  {
-    if (Button_Up)
-    {
-      if (playerY < 7 && ReadPx(playerX, playerY + 1) == 0)
-        playerY++;
-    }
-    if (Button_Right)
-    {
-      if (playerX < 7 && ReadPx(playerX + 1, playerY) == 0)
-        playerX++;
-    }
-    if (Button_Down)
-    {
-      if (playerY > 0 && ReadPx(playerX, playerY - 1) == 0)
-        playerY--;
-    }
-    if (Button_Left)
-    {
-      if (playerX > 0  && ReadPx(playerX - 1, playerY) == 0)
-        playerX--;
-    }
-  }
-
+    updateMaze();
+  else updatePlayer();
+  SetAuxLEDs(eaten);
   DrawScreen();
   DrawPlayer();
+  DrawApple();
   
   if (Button_A)
   {
@@ -159,6 +128,47 @@ void loop()                     // run over and over again
   }
 }
 
+void updateMaze()
+{
+  if (Button_Up)
+    RotateQuad(1);
+  if (Button_Right)
+    RotateQuad(2);
+  if (Button_Down)
+    RotateQuad(3);
+  if (Button_Left)
+    RotateQuad(4);
+}
+
+void updatePlayer()
+{
+  // The variable l represents the maze color.
+  if (Button_Up)
+    {
+      int d = ReadPx(playerX, playerY + 1);
+      if (playerY < 7 && d != l)
+        playerY++;
+      if (d == 1)
+      {
+        appleEaten = true;
+      }
+    }
+    if (Button_Right)
+    {
+      if (playerX < 7 && ReadPx(playerX + 1, playerY) != l)
+        playerX++;
+    }
+    if (Button_Down)
+    {
+      if (playerY > 0 && ReadPx(playerX, playerY - 1) != l)
+        playerY--;
+    }
+    if (Button_Left)
+    {
+      if (playerX > 0  && ReadPx(playerX - 1, playerY) != l)
+        playerX--;
+    }
+}
 void SaveScreen() // Takes whatever is on the screen and copies it into screen[][] which is an 8x8 2D array.
 {
   for (int x = 0; x < 8; x++)
@@ -329,11 +339,11 @@ void DrawPlayer()
 // Modified to allow any coordinates to be passed in
 int locateQuadrant(int x , int y)
 {
-  if (playerY > 3 && playerX < 4)
+  if (x > 3 && x < 4)
     return 1;
-  if (playerY > 3 && playerX > 3)
+  if (y > 3 && x > 3)
     return 2;
-  if (playerY < 4 && playerX > 3)
+  if (y < 4 && x > 3)
     return 3;
   else return 4;
 }
@@ -436,8 +446,13 @@ void DrawApple()
       appleY = random(8);
     }
     while (ReadPx(appleX,appleY) != 0);
+    
+    Tone_Start(14152,50);
+    if (eaten < 128)
+      eaten = eaten * 2 + 1;
+    else eaten = 0;
     appleEaten = false;
   }
-  else DrawPx(appleX,appleY,Red);
+  DrawPx(appleX,appleY,Red);
 }
 
